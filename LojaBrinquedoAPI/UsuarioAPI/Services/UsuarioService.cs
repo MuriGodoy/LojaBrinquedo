@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using UsuarioAPI.Data.Dtos;
 using UsuarioAPI.Models;
@@ -10,11 +11,18 @@ public class UsuarioService
 {
     private readonly IMapper _mapper;
     private readonly UserManager<Usuario> _userManager;
+    private readonly SignInManager<Usuario> _signInManager;
+    private readonly TokenService _tokenService;
+    //private readonly RoleManager<Usuario> _roleManager;
 
-    public UsuarioService(IMapper mapper, UserManager<Usuario> userManager)
+    public UsuarioService(IMapper mapper, UserManager<Usuario> userManager, SignInManager<Usuario> signInManager, TokenService tokenService/*,
+        RoleManager<Usuario> roleManager*/)
     {
         _mapper = mapper;
         _userManager = userManager;
+        _signInManager = signInManager;
+        _tokenService = tokenService;
+        //_roleManager = roleManager;
     }
 
     public async Task Cadastra(CreateUsuarioDto usuarioDto)
@@ -37,19 +45,45 @@ public class UsuarioService
             throw new ApplicationException("CPF inválido, tente novamente!");
         }
 
-
         Usuario usuario = _mapper.Map<Usuario>(usuarioDto);
-        /*usuario.Bairro = "a";
-        usuario.Logradouro = "a";
-        usuario.Localidade= "a";*/
-        //usuario.= "a";
 
         IdentityResult resultado = await _userManager.CreateAsync(usuario, usuarioDto.Password);
-
+        var role = await _userManager.AddToRoleAsync(usuario, "Cliente");
         if (!resultado.Succeeded)
         {
             throw new ApplicationException("Falha ao cadastrar usuário");
         }
+    }
+
+    public async Task<string> Login(LoginUsuarioDto usuarioDto)
+    {
+        var username = _userManager.FindByEmailAsync(usuarioDto.Email);
+        var resultado = await _signInManager.PasswordSignInAsync(username.Result.UserName, usuarioDto.Password, false, false);
+
+        if (!resultado.Succeeded)
+        {
+            throw new ApplicationException("Usuário não autenticado!");
+        }
+
+        var usuario = _signInManager.UserManager
+            .Users.FirstOrDefault(user => user.NormalizedUserName == username.Result.UserName.ToUpper());
+        var token = _tokenService.GenerateToken
+            (usuario, _signInManager.UserManager.GetRolesAsync(usuario)
+            .Result.ToList());
+        //string token = _tokenService.GenerateToken(usuario);
+        return token;
+    }
+
+    public async Task<List<ReadUsuarioDto>> ListarUsuarios()
+    {
+        var usuarios = await _userManager.Users.ToListAsync();
+        List<ReadUsuarioDto> dto = new();
+        foreach(var usuario in usuarios)
+        {
+            var user = _mapper.Map<ReadUsuarioDto>(usuario);
+            dto.Add(user);
+        }
+        return dto;
     }
 
     public async Task<CreateUsuarioDto> BuscarEnderecoPorCep(string cep)
