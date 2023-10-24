@@ -51,13 +51,4 @@ public class UsuarioController : ControllerBase
         var token = await _service.Login(usuarioDto);
         return Ok(token);
     }
-
-    [HttpGet("listar")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ListarUsuarios()
-    {
-        List<ReadUsuarioDto> resultado = await _service.ListarUsuarios();
-        if (resultado == null) return NotFound();
-        return Ok(resultado);
-    }
 }

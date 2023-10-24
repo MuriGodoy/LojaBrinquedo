@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using UsuarioAPI.Data;
 using UsuarioAPI.Data.Dtos;
 using UsuarioAPI.Models;
 
@@ -13,16 +14,13 @@ public class UsuarioService
     private readonly UserManager<Usuario> _userManager;
     private readonly SignInManager<Usuario> _signInManager;
     private readonly TokenService _tokenService;
-    //private readonly RoleManager<Usuario> _roleManager;
 
-    public UsuarioService(IMapper mapper, UserManager<Usuario> userManager, SignInManager<Usuario> signInManager, TokenService tokenService/*,
-        RoleManager<Usuario> roleManager*/)
+    public UsuarioService(IMapper mapper, UserManager<Usuario> userManager, SignInManager<Usuario> signInManager, TokenService tokenService, UsuarioDbContext context)
     {
         _mapper = mapper;
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
-        //_roleManager = roleManager;
     }
 
     public async Task Cadastra(CreateUsuarioDto usuarioDto)
@@ -70,20 +68,7 @@ public class UsuarioService
         var token = _tokenService.GenerateToken
             (usuario, _signInManager.UserManager.GetRolesAsync(usuario)
             .Result.ToList());
-        //string token = _tokenService.GenerateToken(usuario);
         return token;
-    }
-
-    public async Task<List<ReadUsuarioDto>> ListarUsuarios()
-    {
-        var usuarios = await _userManager.Users.ToListAsync();
-        List<ReadUsuarioDto> dto = new();
-        foreach(var usuario in usuarios)
-        {
-            var user = _mapper.Map<ReadUsuarioDto>(usuario);
-            dto.Add(user);
-        }
-        return dto;
     }
 
     public async Task<CreateUsuarioDto> BuscarEnderecoPorCep(string cep)
