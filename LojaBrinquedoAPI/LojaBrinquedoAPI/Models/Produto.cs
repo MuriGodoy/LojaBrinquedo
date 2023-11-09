@@ -23,5 +23,4 @@ public class Produto
     public DateTime? HoraDeCriacao { get; set; } = DateTime.Now;
     public DateTime? HoraDeModificacao { get; set; }
     public int? CarrinhoId { get; set; }
-    public virtual ICollection<ProdutoCarrinho>? ProdutosCarrinhos { get; set; }
 }

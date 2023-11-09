@@ -21,4 +21,11 @@ public class ProdutoController : ControllerBase
         var produto = _service.RecuperaProdutos();
         return produto;
     }
+
+    [HttpGet("pesquisarid/{id}")]
+    public List<Produto> RecuperaProdutoPorID(int id)
+    {
+        List<Produto> produto = _service.RecuperaProdutoPorID(id);
+        return produto;
+    }
 }

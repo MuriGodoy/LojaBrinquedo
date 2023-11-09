@@ -19,6 +19,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ProdutoService>();
+//builder.Services.AddScoped
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 

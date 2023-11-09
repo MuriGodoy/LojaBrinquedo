@@ -17,5 +17,11 @@ namespace LojaBrinquedoAPI.Services
             var produto = _context.Produtos.ToList();
             return produto;
        }
+
+        public List<Produto> RecuperaProdutoPorID(int id)
+        {
+            var produto = _context.Produtos.Where(produto => produto.Id == id).ToList();
+            return produto;
+        }
     }
 }
